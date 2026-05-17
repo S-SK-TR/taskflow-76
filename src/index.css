@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-base: theme(colors.background);
+    --bg-surface: theme(colors.surface);
+    --text-primary: theme(colors.text);
+    --text-muted: theme(colors.text/70);
+    --border: theme(colors.surface/30);
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --blur: blur(16px) saturate(180%);
+  }
+
+  html {
+    @apply bg-[var(--bg-base)] text-[var(--text-primary)];
+  }
+
+  body {
+    @apply font-sans antialiased;
+  }
+
+  .glass-card {
+    @apply bg-[var(--glass-bg)] backdrop-blur-[var(--blur)] border border-[var(--glass-border)] rounded-xl;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary/90 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-white hover:bg-secondary/90 active:scale-95;
+  }
+}
