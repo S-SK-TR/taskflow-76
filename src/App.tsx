@@ -1,12 +1,21 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
-import { Dashboard } from '@/features/dashboard/components/Dashboard'
 import { TaskList } from '@/features/tasks/components/TaskList'
 import { TaskDetail } from '@/features/tasks/components/TaskDetail'
 import { RoutineList } from '@/features/routines/components/RoutineList'
 import { GoalList } from '@/features/goals/components/GoalList'
 import { Settings } from '@/features/settings/components/Settings'
 import { StoreProvider } from '@/core/store'
+
+// Dashboard bileşeni için geçici yer tutucu
+const Dashboard = () => {
+  return (
+    <div className="glass-card p-6 rounded-xl">
+      <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+      <p className="text-gray-400">Dashboard bileşeni henüz eklenmedi.</p>
+    </div>
+  )
+}
 
 function App() {
   return (

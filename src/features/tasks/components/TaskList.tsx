@@ -1,118 +1,88 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Check, Trash2 } from 'lucide-react'
-import { useStore } from '@/core/store'
-import { cn } from '@/core/utils'
+import { motion } from 'framer-motion'
+import { Plus, CheckCircle, Circle } from 'lucide-react'
 
 interface Task {
   id: string
   title: string
-  status: 'pending' | 'in-progress' | 'completed'
-  dueDate?: string
+  completed: boolean
 }
 
 export function TaskList() {
-  const { tasks, setTasks } = useStore((state) => ({
-    tasks: state.tasks.items,
-    setTasks: state.setTasks
-  }))
-
-  const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [newTask, setNewTask] = useState('')
 
   const addTask = () => {
-    if (!newTaskTitle.trim()) return
-
-    const newTask: Task = {
-      id: Date.now().toString(),
-      title: newTaskTitle,
-      status: 'pending'
+    if (newTask.trim()) {
+      setTasks([
+        ...tasks,
+        { id: Date.now().toString(), title: newTask, completed: false }
+      ])
+      setNewTask('')
     }
-
-    setTasks({ items: [...tasks, newTask] })
-    setNewTaskTitle('')
   }
 
-  const updateTaskStatus = (id: string, status: Task['status']) => {
-    setTasks({
-      items: tasks.map((task) =>
-        task.id === id ? { ...task, status } : task
-      )
-    })
-  }
-
-  const deleteTask = (id: string) => {
-    setTasks({ items: tasks.filter((task) => task.id !== id) })
+  const toggleTask = (id: string) => {
+    setTasks(tasks.map(task =>
+      task.id === id ? { ...task, completed: !task.completed } : task
+    ))
   }
 
   return (
-    <div className="space-y-4">
-      {/* Add Task Form */}
-      <div className="glass-card p-4 rounded-xl">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={newTaskTitle}
-            onChange={(e) => setNewTaskTitle(e.target.value)}
-            placeholder="Add a new task..."
-            className="flex-1 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            onKeyDown={(e) => e.key === 'Enter' && addTask()}
-          />
-          <button
-            onClick={addTask}
-            className="btn btn-primary flex items-center gap-2"
-          >
-            <Plus size={16} />
-            <span>Add</span>
-          </button>
-        </div>
+    <div className="glass-card p-6 rounded-xl">
+      <h1 className="text-2xl font-bold mb-6">Görevler</h1>
+
+      <div className="flex mb-6">
+        <input
+          type="text"
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && addTask()}
+          placeholder="Yeni görev ekle..."
+          className="flex-1 glass-morphism px-4 py-2 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          onClick={addTask}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-r-lg transition-colors"
+        >
+          <Plus className="h-5 w-5" />
+        </button>
       </div>
 
-      {/* Task List */}
       <div className="space-y-3">
-        <AnimatePresence>
-          {tasks.map((task) => (
+        {tasks.length === 0 ? (
+          <p className="text-gray-400 text-center">Henüz görev yok. Yeni bir görev ekleyin.</p>
+        ) : (
+          tasks.map((task) => (
             <motion.div
               key={task.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-              className="glass-card p-4 rounded-xl flex items-center gap-3"
+              exit={{ opacity: 0, y: -10 }}
+              className={`glass-morphism p-4 rounded-lg flex items-center justify-between transition-colors ${
+                task.completed ? 'opacity-70' : ''
+              }`}
             >
-              <button
-                onClick={() =>
-                  updateTaskStatus(
-                    task.id,
-                    task.status === 'completed' ? 'pending' : 'completed'
-                  )
-                }
-                className={cn(
-                  "h-5 w-5 rounded-full border-2 flex items-center justify-center flex-shrink-0",
-                  task.status === 'completed' && "bg-green-500 border-green-500",
-                  task.status !== 'completed' && "border-[var(--text-muted)]"
-                )}
-              >
-                {task.status === 'completed' && <Check size={12} className="text-white" />}
-              </button>
-
-              <span
-                className={cn(
-                  "flex-1 text-sm",
-                  task.status === 'completed' && "line-through text-[var(--text-muted)]"
-                )}
-              >
-                {task.title}
-              </span>
-
-              <button
-                onClick={() => deleteTask(task.id)}
-                className="p-1 rounded-lg hover:bg-[var(--glass-bg)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-              >
-                <Trash2 size={16} />
-              </button>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => toggleTask(task.id)}
+                  className={`p-1 rounded-full transition-colors ${
+                    task.completed ? 'text-green-400' : 'text-gray-400 hover:text-green-400'
+                  }`}
+                >
+                  {task.completed ? (
+                    <CheckCircle className="h-5 w-5" />
+                  ) : (
+                    <Circle className="h-5 w-5" />
+                  )}
+                </button>
+                <span className={task.completed ? 'line-through text-gray-400' : ''}>{
+                  task.title
+                }</span>
+              </div>
             </motion.div>
-          ))}
-        </AnimatePresence>
+          ))
+        )}
       </div>
     </div>
   )

@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2 } from 'lucide-react'
-import { useStore } from '@/core/store'
+import { motion } from 'framer-motion'
+import { Plus, Target } from 'lucide-react'
 
 interface Goal {
   id: string
@@ -10,123 +9,87 @@ interface Goal {
 }
 
 export function GoalList() {
-  const { goals, setGoals } = useStore((state) => ({
-    goals: state.goals.items,
-    setGoals: state.setGoals
-  }))
-
-  const [newGoal, setNewGoal] = useState({
-    title: '',
-    progress: 0
-  })
+  const [goals, setGoals] = useState<Goal[]>([])
+  const [newGoal, setNewGoal] = useState('')
 
   const addGoal = () => {
-    if (!newGoal.title.trim()) return
-
-    const goal: Goal = {
-      id: Date.now().toString(),
-      title: newGoal.title,
-      progress: newGoal.progress
+    if (newGoal.trim()) {
+      setGoals([
+        ...goals,
+        { id: Date.now().toString(), title: newGoal, progress: 0 }
+      ])
+      setNewGoal('')
     }
-
-    setGoals({ items: [...goals, goal] })
-    setNewGoal({ title: '', progress: 0 })
   }
 
   const updateProgress = (id: string, progress: number) => {
-    setGoals({
-      items: goals.map((goal) =>
-        goal.id === id ? { ...goal, progress } : goal
-      )
-    })
-  }
-
-  const deleteGoal = (id: string) => {
-    setGoals({ items: goals.filter((goal) => goal.id !== id) })
+    setGoals(goals.map(goal =>
+      goal.id === id ? { ...goal, progress } : goal
+    ))
   }
 
   return (
-    <div className="space-y-4">
-      {/* Add Goal Form */}
-      <div className="glass-card p-4 rounded-xl">
-        <div className="space-y-3">
-          <input
-            type="text"
-            value={newGoal.title}
-            onChange={(e) => setNewGoal({ ...newGoal, title: e.target.value })}
-            placeholder="Goal title..."
-            className="w-full bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-          />
+    <div className="glass-card p-6 rounded-xl">
+      <h1 className="text-2xl font-bold mb-6">Hedefler</h1>
 
-          <div className="flex gap-2">
-            <input
-              type="number"
-              value={newGoal.progress}
-              onChange={(e) => setNewGoal({ ...newGoal, progress: Number(e.target.value) })}
-              placeholder="Progress"
-              min="0"
-              max="100"
-              className="w-20 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-
-            <button
-              onClick={addGoal}
-              className="btn btn-primary flex items-center gap-2 ml-auto"
-            >
-              <Plus size={16} />
-              <span>Add</span>
-            </button>
-          </div>
-        </div>
+      <div className="flex mb-6">
+        <input
+          type="text"
+          value={newGoal}
+          onChange={(e) => setNewGoal(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && addGoal()}
+          placeholder="Yeni hedef ekle..."
+          className="flex-1 glass-morphism px-4 py-2 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          onClick={addGoal}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-r-lg transition-colors"
+        >
+          <Plus className="h-5 w-5" />
+        </button>
       </div>
 
-      {/* Goal List */}
-      <div className="space-y-3">
-        <AnimatePresence>
-          {goals.map((goal) => (
+      <div className="space-y-4">
+        {goals.length === 0 ? (
+          <p className="text-gray-400 text-center">Henüz hedef yok. Yeni bir hedef ekleyin.</p>
+        ) : (
+          goals.map((goal) => (
             <motion.div
               key={goal.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-              className="glass-card p-4 rounded-xl"
+              exit={{ opacity: 0, y: -10 }}
+              className="glass-morphism p-4 rounded-lg"
             >
-              <div className="flex justify-between items-start mb-2">
-                <h4 className="font-medium">{goal.title}</h4>
-                <button
-                  onClick={() => deleteGoal(goal.id)}
-                  className="p-1 rounded-lg hover:bg-[var(--glass-bg)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-                >
-                  <Trash2 size={16} />
-                </button>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-2">
+                  <Target className="h-5 w-5 text-blue-400" />
+                  <span>{goal.title}</span>
+                </div>
+                <span className="text-gray-400">{goal.progress}%</span>
               </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs text-[var(--text-muted)]">
-                  <span>Progress</span>
-                  <span>{goal.progress}%</span>
-                </div>
-
-                <div className="h-2 bg-[var(--glass-bg)] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full"
-                    style={{ width: `${goal.progress}%` }}
-                  />
-                </div>
-
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={goal.progress}
-                  onChange={(e) => updateProgress(goal.id, Number(e.target.value))}
-                  className="w-full h-1 bg-transparent appearance-none cursor-pointer rounded-full"
-                />
+              <div className="w-full bg-gray-700 rounded-full h-2.5">
+                <div
+                  className="bg-blue-500 h-2.5 rounded-full"
+                  style={{ width: `${goal.progress}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between mt-2">
+                {[0, 25, 50, 75, 100].map((value) => (
+                  <button
+                    key={value}
+                    onClick={() => updateProgress(goal.id, value)}
+                    className={`text-xs px-2 py-1 rounded-full transition-colors ${
+                      goal.progress === value ? 'bg-blue-500 text-white' : 'text-gray-400 hover:bg-gray-700'
+                    }`}
+                  >
+                    {value}%
+                  </button>
+                ))}
               </div>
             </motion.div>
-          ))}
-        </AnimatePresence>
+          ))
+        )}
       </div>
     </div>
   )

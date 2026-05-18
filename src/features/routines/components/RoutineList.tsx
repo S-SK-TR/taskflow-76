@@ -1,105 +1,75 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2 } from 'lucide-react'
-import { useStore } from '@/core/store'
+import { motion } from 'framer-motion'
+import { Plus, Clock } from 'lucide-react'
 
 interface Routine {
   id: string
   title: string
-  frequency: 'Daily' | 'Weekly' | 'Monthly'
+  time: string
 }
 
 export function RoutineList() {
-  const { routines, setRoutines } = useStore((state) => ({
-    routines: state.routines.items,
-    setRoutines: state.setRoutines
-  }))
-
-  const [newRoutine, setNewRoutine] = useState({
-    title: '',
-    frequency: 'Daily' as const
-  })
+  const [routines, setRoutines] = useState<Routine[]>([])
+  const [newRoutine, setNewRoutine] = useState('')
+  const [newTime, setNewTime] = useState('')
 
   const addRoutine = () => {
-    if (!newRoutine.title.trim()) return
-
-    const routine: Routine = {
-      id: Date.now().toString(),
-      title: newRoutine.title,
-      frequency: newRoutine.frequency
+    if (newRoutine.trim() && newTime.trim()) {
+      setRoutines([
+        ...routines,
+        { id: Date.now().toString(), title: newRoutine, time: newTime }
+      ])
+      setNewRoutine('')
+      setNewTime('')
     }
-
-    setRoutines({ items: [...routines, routine] })
-    setNewRoutine({ title: '', frequency: 'Daily' })
-  }
-
-  const deleteRoutine = (id: string) => {
-    setRoutines({ items: routines.filter((routine) => routine.id !== id) })
   }
 
   return (
-    <div className="space-y-4">
-      {/* Add Routine Form */}
-      <div className="glass-card p-4 rounded-xl">
-        <div className="space-y-3">
-          <input
-            type="text"
-            value={newRoutine.title}
-            onChange={(e) => setNewRoutine({ ...newRoutine, title: e.target.value })}
-            placeholder="Routine title..."
-            className="w-full bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-          />
+    <div className="glass-card p-6 rounded-xl">
+      <h1 className="text-2xl font-bold mb-6">Rutinler</h1>
 
-          <div className="flex gap-2">
-            <select
-              value={newRoutine.frequency}
-              onChange={(e) => setNewRoutine({ ...newRoutine, frequency: e.target.value as any })}
-              className="flex-1 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="Daily">Daily</option>
-              <option value="Weekly">Weekly</option>
-              <option value="Monthly">Monthly</option>
-            </select>
-
-            <button
-              onClick={addRoutine}
-              className="btn btn-primary flex items-center gap-2"
-            >
-              <Plus size={16} />
-              <span>Add</span>
-            </button>
-          </div>
-        </div>
+      <div className="flex mb-6 space-x-2">
+        <input
+          type="text"
+          value={newRoutine}
+          onChange={(e) => setNewRoutine(e.target.value)}
+          placeholder="Yeni rutin ekle..."
+          className="flex-1 glass-morphism px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          type="time"
+          value={newTime}
+          onChange={(e) => setNewTime(e.target.value)}
+          className="glass-morphism px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          onClick={addRoutine}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+        >
+          <Plus className="h-5 w-5" />
+        </button>
       </div>
 
-      {/* Routine List */}
       <div className="space-y-3">
-        <AnimatePresence>
-          {routines.map((routine) => (
+        {routines.length === 0 ? (
+          <p className="text-gray-400 text-center">Henüz rutin yok. Yeni bir rutin ekleyin.</p>
+        ) : (
+          routines.map((routine) => (
             <motion.div
               key={routine.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-              className="glass-card p-4 rounded-xl flex items-center gap-3"
+              exit={{ opacity: 0, y: -10 }}
+              className="glass-morphism p-4 rounded-lg flex items-center justify-between"
             >
-              <div className="flex-1">
-                <h4 className="font-medium">{routine.title}</h4>
-                <p className="text-xs text-[var(--text-muted)]">
-                  {routine.frequency}
-                </p>
+              <div className="flex items-center space-x-3">
+                <Clock className="h-5 w-5 text-blue-400" />
+                <span>{routine.title}</span>
               </div>
-
-              <button
-                onClick={() => deleteRoutine(routine.id)}
-                className="p-1 rounded-lg hover:bg-[var(--glass-bg)] text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-              >
-                <Trash2 size={16} />
-              </button>
+              <span className="text-gray-400">{routine.time}</span>
             </motion.div>
-          ))}
-        </AnimatePresence>
+          ))
+        )}
       </div>
     </div>
   )
