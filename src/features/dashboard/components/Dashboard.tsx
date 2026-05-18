@@ -1,119 +1,124 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useStore } from '@/core/store'
 import { cn } from '@/core/utils'
+import { Link } from 'react-router-dom'
+import { Target, Repeat, HelpCircle, CheckCircle, Calendar } from 'lucide-react'
 
-const DEMO_TASKS = [
-  { id: '1', title: 'Complete project proposal', status: 'in-progress' },
-  { id: '2', title: 'Review code changes', status: 'completed' },
-  { id: '3', title: 'Schedule team meeting', status: 'pending' }
-]
+interface StatCardProps {
+  title: string
+  value: number
+  icon: React.ReactNode
+  color: string
+  link: string
+}
 
-const DEMO_ROUTINES = [
-  { id: '1', title: 'Morning exercise', frequency: 'Daily' },
-  { id: '2', title: 'Weekly review', frequency: 'Weekly' }
-]
-
-const DEMO_GOALS = [
-  { id: '1', title: 'Finish project', progress: 65 },
-  { id: '2', title: 'Improve coding skills', progress: 30 }
-]
+function StatCard({ title, value, icon, color, link }: StatCardProps) {
+  return (
+    <Link to={link} className="block">
+      <motion.div
+        whileHover={{ y: -2, transition: { duration: 0.2 } }}
+        className={cn(
+          "glass-card p-4 rounded-xl space-y-2 shadow-md hover:shadow-lg transition-shadow",
+          `border-l-4 border-${color}-500`
+        )}
+      >
+        <div className="flex items-center justify-between">
+          <div className={`h-8 w-8 rounded-lg bg-${color}-500/10 flex items-center justify-center`}>
+            {icon}
+          </div>
+          <span className={`text-${color}-500 font-medium text-sm`}>{title}</span>
+        </div>
+        <div className="text-2xl font-bold">{value}</div>
+      </motion.div>
+    </Link>
+  )
+}
 
 export function Dashboard() {
   const { tasks, routines, goals } = useStore((state) => ({
-    tasks: state.tasks.items.length > 0 ? state.tasks.items : DEMO_TASKS,
-    routines: state.routines.items.length > 0 ? state.routines.items : DEMO_ROUTINES,
-    goals: state.goals.items.length > 0 ? state.goals.items : DEMO_GOALS
+    tasks: state.tasks.items,
+    routines: state.routines.items,
+    goals: state.goals.items
   }))
+
+  const completedTasks = tasks.filter(task => task.status === 'completed').length
+  const activeRoutines = routines.filter(routine => routine.completed).length
+  const completedGoals = goals.filter(goal => goal.completed).length
 
   return (
     <div className="space-y-6">
-      {/* Bento Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Tasks Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="glass-card p-4 rounded-xl"
-        >
-          <h3 className="text-lg font-semibold mb-4">Tasks</h3>
-          <div className="space-y-3">
-            {tasks.map((task) => (
-              <div key={task.id} className="flex items-center gap-3">
-                <div className={cn(
-                  "h-2 w-2 rounded-full",
-                  task.status === 'completed' && "bg-green-500",
-                  task.status === 'in-progress' && "bg-yellow-500",
-                  task.status === 'pending' && "bg-gray-500"
-                )} />
-                <span className="text-sm">{task.title}</span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Routines Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="glass-card p-4 rounded-xl"
-        >
-          <h3 className="text-lg font-semibold mb-4">Routines</h3>
-          <div className="space-y-3">
-            {routines.map((routine) => (
-              <div key={routine.id} className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-blue-500" />
-                <span className="text-sm">{routine.title}</span>
-                <span className="ml-auto text-xs text-[var(--text-muted)]">
-                  {routine.frequency}
-                </span>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Goals Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="glass-card p-4 rounded-xl"
-        >
-          <h3 className="text-lg font-semibold mb-4">Goals</h3>
-          <div className="space-y-4">
-            {goals.map((goal) => (
-              <div key={goal.id}>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm">{goal.title}</span>
-                  <span className="text-xs text-[var(--text-muted)]">{goal.progress}%</span>
-                </div>
-                <div className="h-2 bg-[var(--glass-bg)] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full"
-                    style={{ width: `${goal.progress}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+      <div className="glass-card p-6 rounded-xl shadow-md">
+        <h1 className="text-2xl font-semibold">Günlük Planlama</h1>
+        <p className="text-[var(--text-muted)] mt-1">Bugünün hedeflerinizi yönetin ve ilerlemenizi takip edin.</p>
       </div>
 
-      {/* Quick Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="glass-card p-4 rounded-xl"
-      >
-        <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-        <div className="flex flex-wrap gap-3">
-          <button className="btn btn-primary">Add Task</button>
-          <button className="btn btn-secondary">Add Routine</button>
-          <button className="btn bg-accent text-white hover:bg-accent/90">Add Goal</button>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <StatCard
+          title="Tamamlanan Görevler"
+          value={completedTasks}
+          icon={<HelpCircle size={16} className="text-blue-500" />}
+          color="blue"
+          link="/tasks"
+        />
+
+        <StatCard
+          title="Tamamlanan Rutinler"
+          value={activeRoutines}
+          icon={<Repeat size={16} className="text-green-500" />}
+          color="green"
+          link="/routines"
+        />
+
+        <StatCard
+          title="Tamamlanan Hedefler"
+          value={completedGoals}
+          icon={<Target size={16} className="text-purple-500" />}
+          color="purple"
+          link="/goals"
+        />
+      </div>
+
+      <div className="glass-card p-6 rounded-xl shadow-md">
+        <div className="flex items-center gap-2 mb-4">
+          <Calendar size={18} className="text-[var(--text-muted)]" />
+          <h2 className="text-lg font-medium">Bugünkü Görevler</h2>
         </div>
-      </motion.div>
+
+        <div className="space-y-3">
+          {tasks.filter(task => task.status !== 'completed').slice(0, 3).map((task) => (
+            <motion.div
+              key={task.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="glass-card p-3 rounded-lg flex items-center gap-3"
+            >
+              <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${task.category === 'work' ? 'border-blue-500' : task.category === 'personal' ? 'border-purple-500' : task.category === 'health' ? 'border-green-500' : task.category === 'education' ? 'border-yellow-500' : 'border-pink-500'}`}>
+                {task.status === 'completed' && <CheckCircle size={12} className="text-green-500" />}
+              </div>
+              <div>
+                <h3 className="font-medium">{task.title}</h3>
+                {task.description && (
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">{task.description}</p>
+                )}
+              </div>
+            </motion.div>
+          ))}
+
+          {tasks.filter(task => task.status !== 'completed').length === 0 && (
+            <div className="text-center py-6 text-[var(--text-muted)]">
+              Bugün için henüz görev yok.
+            </div>
+          )}
+        </div>
+
+        {tasks.filter(task => task.status !== 'completed').length > 3 && (
+          <div className="mt-4 text-center">
+            <Link to="/tasks" className="text-sm text-blue-500 hover:underline">Tüm görevleri gör</Link>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
