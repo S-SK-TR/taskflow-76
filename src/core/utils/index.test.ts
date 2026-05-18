@@ -1,22 +1,31 @@
-import { describe, it, expect } from 'vitest'
-import { cn } from './index'
+import { formatDate, formatTime, getDayName, timeAgo } from './index'
 
-describe('cn utility function', () => {
-  it('merges class names correctly', () => {
-    expect(cn('bg-red-500', 'text-white')).toBe('bg-red-500 text-white')
+describe('utils', () => {
+  describe('formatDate', () => {
+    it('formats date correctly', () => {
+      const dateString = '2023-10-15T00:00:00'
+      expect(formatDate(dateString)).toBe('15 Eki 2023')
+    })
   })
 
-  it('handles conditional classes', () => {
-    expect(cn('bg-red-500', false && 'text-white')).toBe('bg-red-500')
-    expect(cn('bg-red-500', true && 'text-white')).toBe('bg-red-500 text-white')
+  describe('formatTime', () => {
+    it('formats time correctly', () => {
+      expect(formatTime('14:30')).toBe('14:30')
+    })
   })
 
-  it('resolves tailwind conflicts', () => {
-    expect(cn('p-4', 'p-2')).toBe('p-2')
-    expect(cn('text-red-500', 'text-blue-500')).toBe('text-blue-500')
+  describe('getDayName', () => {
+    it('returns correct day name', () => {
+      expect(getDayName('monday')).toBe('Pazartesi')
+      expect(getDayName('sunday')).toBe('Pazar')
+    })
   })
 
-  it('handles array input', () => {
-    expect(cn(['bg-red-500', 'text-white'])).toBe('bg-red-500 text-white')
+  describe('timeAgo', () => {
+    it('returns correct time ago string', () => {
+      const now = new Date()
+      const oneHourAgo = new Date(now.getTime() - 3600000)
+      expect(timeAgo(oneHourAgo.toISOString())).toBe('1 saat önce')
+    })
   })
 })

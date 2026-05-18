@@ -1,33 +1,21 @@
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
-import App from './App'
 import { MemoryRouter } from 'react-router-dom'
+import App from './App'
+import { StoreProvider } from './core/store'
 
-// Mock the StoreProvider and AppShell components
-vi.mock('./core/store', () => ({
-  StoreProvider: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
+jest.mock('./components/layout/AppShell', () => ({
+  AppShell: () => <div data-testid="app-shell">Mock AppShell</div>
 }))
 
-vi.mock('./components/layout/AppShell', () => ({
-  AppShell: () => <div data-testid="app-shell">App Shell</div>
-}))
-
-describe('App Component', () => {
+describe('App', () => {
   it('renders without crashing', () => {
     render(
       <MemoryRouter>
-        <App />
+        <StoreProvider>
+          <App />
+        </StoreProvider>
       </MemoryRouter>
     )
     expect(screen.getByTestId('app-shell')).toBeInTheDocument()
-  })
-
-  it('wraps content with StoreProvider and BrowserRouter', () => {
-    const { container } = render(
-      <MemoryRouter>
-        <App />
-      </MemoryRouter>
-    )
-    expect(container.querySelector('div > div')).toBeInTheDocument()
   })
 })

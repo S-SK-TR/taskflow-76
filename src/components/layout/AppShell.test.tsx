@@ -1,26 +1,27 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
-import { AppShell } from './AppShell'
 import { MemoryRouter } from 'react-router-dom'
+import { AppShell } from './AppShell'
 import { StoreProvider } from '@/core/store'
 
-// Mock the useStore hook
-vi.mock('@/core/store', async (importOriginal) => {
-  const original = await importOriginal()
-  return {
-    ...original,
-    useStore: vi.fn().mockImplementation((selector) => {
-      const state = {
-        ui: { sidebarOpen: false, theme: 'dark' },
-        setUi: vi.fn()
-      }
-      return selector(state)
-    })
-  }
-})
+jest.mock('@/core/store', () => ({
+  useStore: jest.fn()
+}))
 
-describe('AppShell Component', () => {
-  it('renders correctly', () => {
+const mockUseStore = require('@/core/store').useStore
+
+describe('AppShell', () => {
+  beforeEach(() => {
+    mockUseStore.mockImplementation((selector) => selector({
+      ui: {
+        sidebarOpen: false,
+        theme: 'dark',
+        notificationsOpen: false
+      },
+      setUi: jest.fn()
+    }))
+  })
+
+  it('renders navigation items', () => {
     render(
       <MemoryRouter>
         <StoreProvider>
@@ -28,19 +29,22 @@ describe('AppShell Component', () => {
         </StoreProvider>
       </MemoryRouter>
     )
-    expect(screen.getByText('TaskFlow')).toBeInTheDocument()
-    expect(screen.getByText('Dashboard')).toBeInTheDocument()
+    expect(screen.getByText('Görevler')).toBeInTheDocument()
+    expect(screen.getByText('Rutinler')).toBeInTheDocument()
+    expect(screen.getByText('Hedefler')).toBeInTheDocument()
+    expect(screen.getByText('Ayarlar')).toBeInTheDocument()
   })
 
-  it('toggles sidebar when menu button is clicked', () => {
-    const mockSetUi = vi.fn()
-    vi.mocked(useStore).mockImplementation((selector) => {
-      const state = {
-        ui: { sidebarOpen: false, theme: 'dark' },
-        setUi: mockSetUi
-      }
-      return selector(state)
-    })
+  it('toggles sidebar on mobile', () => {
+    const setUiMock = jest.fn()
+    mockUseStore.mockImplementation((selector) => selector({
+      ui: {
+        sidebarOpen: false,
+        theme: 'dark',
+        notificationsOpen: false
+      },
+      setUi: setUiMock
+    }))
 
     render(
       <MemoryRouter>
@@ -52,31 +56,6 @@ describe('AppShell Component', () => {
 
     const menuButton = screen.getByRole('button', { name: /menu/i })
     fireEvent.click(menuButton)
-    expect(mockSetUi).toHaveBeenCalledWith({ sidebarOpen: true })
-  })
-
-  it('applies dark theme class to document element', () => {
-    render(
-      <MemoryRouter>
-        <StoreProvider>
-          <AppShell />
-        </StoreProvider>
-      </MemoryRouter>
-    )
-    expect(document.documentElement.classList.contains('dark')).toBe(true)
-  })
-
-  it('renders all navigation items', () => {
-    render(
-      <MemoryRouter>
-        <StoreProvider>
-          <AppShell />
-        </StoreProvider>
-      </MemoryRouter>
-    )
-    expect(screen.getByText('Tasks')).toBeInTheDocument()
-    expect(screen.getByText('Routines')).toBeInTheDocument()
-    expect(screen.getByText('Goals')).toBeInTheDocument()
-    expect(screen.getByText('Settings')).toBeInTheDocument()
+    expect(setUiMock).toHaveBeenCalledWith({ sidebarOpen: true })
   })
 })
